@@ -16,6 +16,12 @@ void nRF24L01_spi_init();
 **/
 u8 nRF24L01_cmd_send(u8 reg, u8 cmd);
 
+/**
+* Отправка данных по spi
+* @return полученные данные
+**/
+u8 spi_send(u8 data);
+
 // регистры nRF24L01
 enum nRF24L01_REG {
     CONFIG_REG = 0,

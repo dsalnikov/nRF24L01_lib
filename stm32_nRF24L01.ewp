@@ -1925,6 +1925,12 @@
     <name>$PROJ_DIR$\main.c</name>
   </file>
   <file>
+    <name>$PROJ_DIR$\nRF24L01.c</name>
+  </file>
+  <file>
+    <name>$PROJ_DIR$\nRF24L01.h</name>
+  </file>
+  <file>
     <name>$PROJ_DIR$\stm32f4xx_it.c</name>
   </file>
   <file>

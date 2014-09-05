@@ -1,5 +1,7 @@
 #include <stm32f4xx.h>
 
+#include "nRF24L01.h"
+
 #define LED_PORT GPIOD
 
 #define LED_GREEN (1 << 12) /* port D, pin 12 */
