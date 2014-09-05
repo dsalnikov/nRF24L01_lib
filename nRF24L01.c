@@ -26,7 +26,7 @@ void nRF24L01_spi_init()
     SPI2->CR1 = SPI_CR1_CRCEN | SPI_CR1_SPE | SPI_CR1_BR_2 | SPI_CR1_BR_1 | SPI_CR1_BR_0 | SPI_CR1_MSTR | SPI_CR1_SSM;
     
     // CRC: x^8 + x^2 + x + 1
-    SPI2->CRCPR = 0x07;
+    SPI2->CRCPR = 0x07; 
 }
 
 u8 spi_send(u8 data)
