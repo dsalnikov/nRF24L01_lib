@@ -10,12 +10,12 @@
 #define LED_BLUE (1 << 15) /* port D, pin 15 */
 
 static inline void setup_leds(void){
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;    // разрешаем тактирование порта D (диоды)
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;   // и порта A (кнопка)
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;    // СЂР°Р·СЂРµС€Р°РµРј С‚Р°РєС‚РёСЂРѕРІР°РЅРёРµ РїРѕСЂС‚Р° D (РґРёРѕРґС‹)
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;   // Рё РїРѕСЂС‚Р° A (РєРЅРѕРїРєР°)
  
-    GPIOA->MODER &= ~GPIO_MODER_MODER0;  // укажем что пин кнопки - вход
+    GPIOA->MODER &= ~GPIO_MODER_MODER0;  // СѓРєР°Р¶РµРј С‡С‚Рѕ РїРёРЅ РєРЅРѕРїРєРё - РІС…РѕРґ
     LED_PORT->MODER |= GPIO_MODER_MODER12_0 | GPIO_MODER_MODER13_0 |
-        GPIO_MODER_MODER14_0 | GPIO_MODER_MODER15_0;    /// на диоды - выход
+        GPIO_MODER_MODER14_0 | GPIO_MODER_MODER15_0;    /// РЅР° РґРёРѕРґС‹ - РІС‹С…РѕРґ
 }
 
 static inline void switch_leds_off(void){
@@ -26,15 +26,15 @@ void main(void){
   
   nRF24L01_init();
   
-  setup_leds();   // инициализация
+  setup_leds();   // РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
 
   while (1)  {
-      if (GPIOA->IDR & GPIO_IDR_IDR_0) {   // если кнопка нажата (на нулевом пине есть потенциал)
+      if (GPIOA->IDR & GPIO_IDR_IDR_0) {   // РµСЃР»Рё РєРЅРѕРїРєР° РЅР°Р¶Р°С‚Р° (РЅР° РЅСѓР»РµРІРѕРј РїРёРЅРµ РµСЃС‚СЊ РїРѕС‚РµРЅС†РёР°Р»)
  
-          LED_PORT->ODR = LED_BLUE | LED_ORANGE | LED_RED | LED_GREEN;  // включаем диоды
+          LED_PORT->ODR = LED_BLUE | LED_ORANGE | LED_RED | LED_GREEN;  // РІРєР»СЋС‡Р°РµРј РґРёРѕРґС‹
  
       } else {
-            switch_leds_off();   //гасим
+            switch_leds_off();   //РіР°СЃРёРј
  
       }
   }

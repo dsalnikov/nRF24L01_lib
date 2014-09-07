@@ -9,9 +9,9 @@ void nRF24L01_init()
 void nRF24L01_spi_init()
 {
     // gpio init
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;    // ðàçðåøàåì òàêòèðîâàíèå ïîðòà C
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;    // Ñ€Ð°Ð·Ñ€ÐµÑˆÐ°ÐµÐ¼ Ñ‚Ð°ÐºÑ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ Ð¿Ð¾Ñ€Ñ‚Ð° C
     
-    // òàêòèðîâàíèå spi3
+    // Ñ‚Ð°ÐºÑ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ spi3
     RCC->APB1ENR |= RCC_APB1ENR_SPI3EN;
     
     //SPI3_MOSI
@@ -33,29 +33,29 @@ void nRF24L01_spi_init()
     GPIOC->AFR[1]   |= (6)<<((10 - 8)*4);           //AF6
     
     //SPI3 CS
-    GPIOC->MODER |= GPIO_MODER_MODER9_0;        //âûõîä
+    GPIOC->MODER |= GPIO_MODER_MODER9_0;        //Ð²Ñ‹Ñ…Ð¾Ð´
     GPIOC->OTYPER &= ~GPIO_OTYPER_OT_9;         
     GPIOC->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR9_0; //Medium speed 
             
     // spi 3
     // master 8bit
     // crc
-    // äåëèòåëü 256
-    // ïðîãðàììíûé CS
+    // Ð´ÐµÐ»Ð¸Ñ‚ÐµÐ»ÑŒ 256
+    // Ð¿Ñ€Ð¾Ð³Ñ€Ð°Ð¼Ð¼Ð½Ñ‹Ð¹ CS
     SPI3->CR1 = SPI_CR1_CRCEN | SPI_CR1_SPE | SPI_CR1_BR_2 | SPI_CR1_BR_1 | SPI_CR1_BR_0 | SPI_CR1_MSTR | SPI_CR1_SSM;
     
     // CRC: x^8 + x^2 + x + 1
     SPI3->CRCPR = 0x07; 
 }
 
-u8 spi_send(u8 data)
+u8 nRF24L01_send(u8 data)
 {
     nRF24L01_CS_SET;
     
     SPI2->DR = data;
-    // æäåì îòïðàâêè äàííûõ
+    // Ð¶Ð´ÐµÐ¼ Ð¾Ñ‚Ð¿Ñ€Ð°Ð²ÐºÐ¸ Ð´Ð°Ð½Ð½Ñ‹Ñ…
     while(SPI2->SR & SPI_SR_TXE);
-    // æäå ïîêà äàííûå ïðèäóò
+    // Ð¶Ð´Ðµ Ð¿Ð¾ÐºÐ° Ð´Ð°Ð½Ð½Ñ‹Ðµ Ð¿Ñ€Ð¸Ð´ÑƒÑ‚
     while(SPI2->SR ^ SPI_SR_RXNE);
     
     nRF24L01_CS_RESET;

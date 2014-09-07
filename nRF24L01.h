@@ -1,29 +1,29 @@
 #ifndef __NRF24L01_H
 #define __NRF24L01_H
 
-// макросы управления CS
-// устанавливает ножку CS в 1 состояние
+// РјР°РєСЂРѕСЃС‹ СѓРїСЂР°РІР»РµРЅРёСЏ CS
+// СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕР¶РєСѓ CS РІ 1 СЃРѕСЃС‚РѕСЏРЅРёРµ
 #define nRF24L01_CS_SET     GPIOC->BSRRL = GPIO_BSRR_BS_9
-// сбрасывает ножку CS в 0 состояние
+// СЃР±СЂР°СЃС‹РІР°РµС‚ РЅРѕР¶РєСѓ CS РІ 0 СЃРѕСЃС‚РѕСЏРЅРёРµ
 #define nRF24L01_CS_RESET   GPIOC->BSRRH = GPIO_BSRR_BS_9
 
-// инициализация
+// РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
 void nRF24L01_init();
 void nRF24L01_spi_init();
 
 /**
-* Посылка команды
-* @return ответ на запрос
+* РџРѕСЃС‹Р»РєР° РєРѕРјР°РЅРґС‹
+* @return РѕС‚РІРµС‚ РЅР° Р·Р°РїСЂРѕСЃ
 **/
 u8 nRF24L01_cmd_send(u8 reg, u8 cmd);
 
 /**
-* Отправка данных по spi
-* @return полученные данные
+* РћС‚РїСЂР°РІРєР° РґР°РЅРЅС‹С… РїРѕ spi
+* @return РїРѕР»СѓС‡РµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ
 **/
-u8 spi_send(u8 data);
+u8 nRF24L01_send(u8 data);
 
-// регистры nRF24L01
+// СЂРµРіРёСЃС‚СЂС‹ nRF24L01
 enum nRF24L01_REG {
     CONFIG_REG = 0,
     EN_AA_REG,
@@ -59,7 +59,7 @@ enum nRF24L01_REG {
     FEATURE_REG = 0x1d
 };
 
-// команды nRF24L01
+// РєРѕРјР°РЅРґС‹ nRF24L01
 enum nRF24L01_COMMAND {
     R_REGISTER = 0,
     W_REGISTER = 0x20,
