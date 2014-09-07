@@ -23,6 +23,9 @@ static inline void switch_leds_off(void){
 }
 
 void main(void){
+  
+  nRF24L01_init();
+  
   setup_leds();   // инициализация
 
   while (1)  {

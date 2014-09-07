@@ -2,16 +2,17 @@
 #define __NRF24L01_H
 
 // макросы управления CS
-#define nRF24L01_CS_SET
-#define nRF24L01_CS_RESET
-
+// устанавливает ножку CS в 1 состояние
+#define nRF24L01_CS_SET     GPIOC->BSRRL = GPIO_BSRR_BS_9
+// сбрасывает ножку CS в 0 состояние
+#define nRF24L01_CS_RESET   GPIOC->BSRRH = GPIO_BSRR_BS_9
 
 // инициализация
 void nRF24L01_init();
 void nRF24L01_spi_init();
 
 /**
-* Восылка команды
+* Посылка команды
 * @return ответ на запрос
 **/
 u8 nRF24L01_cmd_send(u8 reg, u8 cmd);
