@@ -50,8 +50,7 @@ ShowTimeSum=1
 [Disassemble mode]
 mode=0
 [Breakpoints2]
-Bp0=_ 1 "STD_CODE2" "{$PROJ_DIR$\nRF24L01.c}.38.5" 0 0 1 "" 0 ""
-Count=1
+Count=0
 [Interrupts]
 Enabled=1
 [MemConfig]

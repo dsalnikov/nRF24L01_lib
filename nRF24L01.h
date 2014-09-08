@@ -21,7 +21,7 @@ u8 nRF24L01_cmd_send(u8 reg, u8 cmd);
 * Отправка данных по spi
 * @return полученные данные
 **/
-u8 nRF24L01_send(u8 data);
+u8 nRF24L01_spi_send(u8 data);
 
 // регистры nRF24L01
 enum nRF24L01_REG {
@@ -56,7 +56,9 @@ enum nRF24L01_REG {
     RX_PLD_REG,  // n/a addr
     
     DYNPD_REG = 0x1c, //1c
-    FEATURE_REG = 0x1d
+    FEATURE_REG = 0x1d,
+    
+    nRF24L01_REG_MAX // максимальный номер регистра
 };
 
 // команды nRF24L01

@@ -48,7 +48,7 @@ void nRF24L01_spi_init()
     SPI3->CRCPR = 0x07; 
 }
 
-u8 nRF24L01_send(u8 data)
+u8 nRF24L01_spi_send(u8 data)
 {
     nRF24L01_CS_SET;
     
@@ -61,4 +61,25 @@ u8 nRF24L01_send(u8 data)
     nRF24L01_CS_RESET;
     
     return SPI2->DR;
+}
+
+u8 nRF24L01_cmd_send(u8 reg, u8 cmd)
+{
+    u8 resp; 
+    
+    if (reg >= nRF24L01_REG_MAX)
+        return 0;
+    
+    switch (cmd)
+    {
+        case R_REGISTER:
+            cmd |= reg & 0x1F; // 5bit
+            resp = nRF24L01_spi_send(cmd);
+        break;
+        
+        default:
+            resp = nRF24L01_spi_send(NOP);
+    }
+    
+    return resp;
 }
