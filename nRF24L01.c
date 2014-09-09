@@ -50,15 +50,11 @@ void nRF24L01_spi_init()
 
 u8 nRF24L01_spi_send(u8 data)
 {
-    nRF24L01_CS_SET;
-    
     SPI2->DR = data;
     // ждем отправки данных
     while(SPI2->SR & SPI_SR_TXE);
     // жде пока данные придут
     while(SPI2->SR ^ SPI_SR_RXNE);
-    
-    nRF24L01_CS_RESET;
     
     return SPI2->DR;
 }
@@ -71,13 +67,23 @@ u8 nRF24L01_cmd_send(u8 cmd)
     return resp;
 }
 
-u8 nRF24L01_read_reg(u8 reg)
+u8 nRF24L01_read_reg(u8 reg, u8 *resp, u8 len)
 {
-    u8 resp;
+    u8 i;
+    
     reg &= 0x1F; // 5bit reg num
-    resp = nRF24L01_spi_send(nRF24L01_R_REGISTER | reg);
-    resp = nRF24L01_spi_send(nRF24L01_NOP);
-    return resp;
+    
+    nRF24L01_CS_SET;
+    
+    nRF24L01_spi_send(nRF24L01_R_REGISTER | reg);
+    for(i=0; i < len; i++)
+    {
+        resp[i] = nRF24L01_spi_send(nRF24L01_NOP);
+    }
+    
+    nRF24L01_CS_RESET;
+    
+    return 1;
 }
 
 u8 nRF24L01_write_reg(u8 reg, u8 data)

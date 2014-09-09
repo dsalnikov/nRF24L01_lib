@@ -26,7 +26,7 @@ u8 nRF24L01_spi_send(u8 data);
 /**
 * Читаем регистр
 **/
-u8 nRF24L01_read_reg(u8 reg);
+u8 nRF24L01_read_reg(u8 reg, u8 *resp, u8 len);
 
 /**
 * Пишем регистр
