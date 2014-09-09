@@ -63,23 +63,53 @@ u8 nRF24L01_spi_send(u8 data)
     return SPI2->DR;
 }
 
-u8 nRF24L01_cmd_send(u8 reg, u8 cmd)
+u8 nRF24L01_cmd_send(u8 cmd)
 {
     u8 resp; 
     
-    if (reg >= nRF24L01_REG_MAX)
-        return 0;
-    
-    switch (cmd)
-    {
-        case R_REGISTER:
-            cmd |= reg & 0x1F; // 5bit
-            resp = nRF24L01_spi_send(cmd);
-        break;
-        
-        default:
-            resp = nRF24L01_spi_send(NOP);
-    }
-    
+    resp = nRF24L01_spi_send(cmd);
     return resp;
 }
+
+u8 nRF24L01_read_reg(u8 reg)
+{
+    u8 resp;
+    reg &= 0x1F; // 5bit reg num
+    resp = nRF24L01_spi_send(nRF24L01_R_REGISTER | reg);
+    resp = nRF24L01_spi_send(nRF24L01_NOP);
+    return resp;
+}
+
+u8 nRF24L01_write_reg(u8 reg, u8 data)
+{
+    u8 resp;
+    reg &= 0x1F; // 5bit reg num
+    resp = nRF24L01_spi_send(nRF24L01_W_REGISTER | reg);
+    resp = nRF24L01_spi_send(data);
+    return resp;
+}
+
+u8 nRF24L01_configure_tx()
+{
+    u8 data = 0; // some configurations  (1<<PWR_UP)|(1<<EN_CRC)|(0<<PRIM_RX)
+    u8 resp;
+    resp = nRF24L01_write_reg(nRF24L01_CONFIG_REG, data);
+    return resp;
+}
+
+u8 nRF24L01_configure_rx()
+{
+    u8 data = 0; // some configurations (1<<PWR_UP)|(1<<EN_CRC)|(0<<PRIM_RX)
+    u8 resp;
+    resp = nRF24L01_write_reg(nRF24L01_CONFIG_REG, data);
+    return resp;
+}
+
+/*u8 nRF24L01_send_byte(u8 data)
+{
+    u8 resp;
+    nRF24L01_cmd_send(nRF24L01_W_TX_PAYLOAD);
+    resp = nRF24L01_spi_send(data);
+    
+    return resp;
+}*/
