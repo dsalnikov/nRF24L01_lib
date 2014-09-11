@@ -23,7 +23,7 @@ static inline void switch_leds_off(void){
 }
 
 void main(void){
-  
+  // test commit
   nRF24L01_init();
   
   setup_leds();   // инициализация
