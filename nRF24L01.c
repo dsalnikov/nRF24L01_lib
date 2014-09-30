@@ -4,60 +4,65 @@
 void nRF24L01_init()
 {
     nRF24L01_spi_init();
+    
+    // CE и CSn
+    GPIO_InitTypeDef gpio;
+    GPIO_StructInit(&gpio);
+
+    gpio.GPIO_Pin = GPIO_Pin_3 | GPIO_Pin_4;
+    gpio.GPIO_Mode = GPIO_Mode_OUT;
+    gpio.GPIO_Speed = GPIO_Speed_50MHz;
+    gpio.GPIO_OType = GPIO_OType_PP;
+    gpio.GPIO_PuPd = GPIO_PuPd_UP;
+    GPIO_Init(GPIOA,&gpio);
+    
+    nRF24L01_CS_RESET;
+    nRF24L01_CE_SET;
+
 }
 
 void nRF24L01_spi_init()
 {
-    // gpio init
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;    // разрешаем тактирование порта C
-    
-    // тактирование spi3
-    RCC->APB1ENR |= RCC_APB1ENR_SPI3EN;
-    
-    //SPI3_MOSI
-    GPIOC->MODER    |= GPIO_MODER_MODER12_1;        //Alternate function mode
-    GPIOC->OTYPER   &= ~GPIO_OTYPER_OT_12;          //Output push-pull (reset state)
-    GPIOC->OSPEEDR  |= GPIO_OSPEEDER_OSPEEDR12_0;   //Medium speed
-    GPIOC->AFR[1]   |= (6)<<((12 - 8)*4);           //AF6
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE);  // тактирование порта
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1,ENABLE);  // тактирование SPI1 
 
-    //SPI3 MISO
-    GPIOC->MODER    |= GPIO_MODER_MODER11_1;        //Alternate function mode
-    GPIOC->OTYPER   &= ~GPIO_OTYPER_OT_11;          //Output push-pull (reset state)
-    GPIOC->OSPEEDR  |= GPIO_OSPEEDER_OSPEEDR11_0;   //Medium speed
-    GPIOC->AFR[1]   |= (6)<<((11 - 8)*4);           //AF6
+    GPIO_InitTypeDef gpio;
+    GPIO_StructInit(&gpio);
 
-    //SPI3 SCK
-    GPIOC->MODER    |= GPIO_MODER_MODER10_1;        //Alternate function mode
-    GPIOC->OTYPER   &= ~GPIO_OTYPER_OT_10;          //Output push-pull (reset state)
-    GPIOC->OSPEEDR  |= GPIO_OSPEEDER_OSPEEDR10_0;   //Medium speed 
-    GPIOC->AFR[1]   |= (6)<<((10 - 8)*4);           //AF6
+    gpio.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
+    gpio.GPIO_Mode = GPIO_Mode_AF;
+    gpio.GPIO_Speed = GPIO_Speed_50MHz;
+    gpio.GPIO_OType = GPIO_OType_PP;
+    gpio.GPIO_PuPd = GPIO_PuPd_DOWN;
+    GPIO_Init(GPIOA,&gpio);
+
+    GPIO_PinAFConfig(GPIOA,GPIO_PinSource5,GPIO_AF_SPI1);
+    GPIO_PinAFConfig(GPIOA,GPIO_PinSource6,GPIO_AF_SPI1);
+    GPIO_PinAFConfig(GPIOA,GPIO_PinSource7,GPIO_AF_SPI1);
+
+    SPI_I2S_DeInit(SPI1);
+    SPI_InitTypeDef spi1;
+    SPI_StructInit(&spi1);
+
+    spi1.SPI_Mode = SPI_Mode_Master;
+    spi1.SPI_DataSize = SPI_DataSize_8b;
+    spi1.SPI_NSS = SPI_NSS_Soft;
+    spi1.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
+    SPI_Init(SPI1,&spi1);
     
-    //SPI3 CS
-    GPIOC->MODER |= GPIO_MODER_MODER9_0;        //выход
-    GPIOC->OTYPER &= ~GPIO_OTYPER_OT_9;         
-    GPIOC->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR9_0; //Medium speed 
-            
-    // spi 3
-    // master 8bit
-    // crc
-    // делитель 256
-    // программный CS
-    SPI3->CR1 = SPI_CR1_CRCEN | SPI_CR1_SPE | SPI_CR1_BR_2 | SPI_CR1_BR_1 | SPI_CR1_BR_0 | SPI_CR1_MSTR | SPI_CR1_SSM;
-    
-    // CRC: x^8 + x^2 + x + 1
-    SPI3->CRCPR = 0x07; 
+    SPI_Cmd(SPI1,ENABLE);
 }
+
 
 u8 nRF24L01_spi_send(u8 data)
 {
-    SPI2->DR = data;
-    // ждем отправки данных
-    while(SPI2->SR & SPI_SR_TXE);
-    // жде пока данные придут
-    while(SPI2->SR ^ SPI_SR_RXNE);
+    SPI_I2S_SendData(SPI1,data);
+    while(SPI_I2S_GetFlagStatus(SPI1,SPI_I2S_FLAG_TXE) == RESET);  // ждём пока данные уйдут    // жде пока данные придут
     
-    return SPI2->DR;
+    while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_RXNE) == RESET);  // ждём пока данные появтся
+    return SPI1->DR;
 }
+
 
 u8 nRF24L01_cmd_send(u8 cmd)
 {
@@ -70,12 +75,13 @@ u8 nRF24L01_cmd_send(u8 cmd)
 u8 nRF24L01_read_reg(u8 reg, u8 *resp, u8 len)
 {
     u8 i;
+    u8 res = 0;
     
     reg &= 0x1F; // 5bit reg num
     
     nRF24L01_CS_SET;
     
-    nRF24L01_spi_send(nRF24L01_R_REGISTER | reg);
+    res = nRF24L01_spi_send(nRF24L01_R_REGISTER | reg);
     for(i=0; i < len; i++)
     {
         resp[i] = nRF24L01_spi_send(nRF24L01_NOP);
@@ -83,15 +89,21 @@ u8 nRF24L01_read_reg(u8 reg, u8 *resp, u8 len)
     
     nRF24L01_CS_RESET;
     
-    return 1;
+    return res;
 }
 
 u8 nRF24L01_write_reg(u8 reg, u8 data)
 {
     u8 resp;
     reg &= 0x1F; // 5bit reg num
+    
+    nRF24L01_CS_SET;
+    
     resp = nRF24L01_spi_send(nRF24L01_W_REGISTER | reg);
     resp = nRF24L01_spi_send(data);
+    
+    nRF24L01_CS_RESET;
+    
     return resp;
 }
 

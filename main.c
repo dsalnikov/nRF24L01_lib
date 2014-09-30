@@ -25,17 +25,20 @@ static inline void switch_leds_off(void){
 void main(void){
   // test commit
   nRF24L01_init();
+  u8 resp[5], r;
+  
+  r = nRF24L01_read_reg(nRF24L01_STATUS_REG,resp,0);
+  r = nRF24L01_read_reg(nRF24L01_CONFIG_REG,resp,1);
+  r = nRF24L01_read_reg(nRF24L01_TX_ADDR_REG,resp,5);
+
+  nRF24L01_write_reg(nRF24L01_CONFIG_REG, 2);
+  r = nRF24L01_read_reg(nRF24L01_CONFIG_REG,resp,1);
   
   setup_leds();   // инициализация
-
+    u32 i;
   while (1)  {
-      if (GPIOA->IDR & GPIO_IDR_IDR_0) {   // если кнопка нажата (на нулевом пине есть потенциал)
- 
-          LED_PORT->ODR = LED_BLUE | LED_ORANGE | LED_RED | LED_GREEN;  // включаем диоды
- 
-      } else {
-            switch_leds_off();   //гасим
- 
-      }
+      for(i=0xffff;i>0;i--);
+      for(i=0xffff;i>0;i--);
+      r = nRF24L01_read_reg(nRF24L01_RX_ADDR_P2_REG,resp,1);
   }
 }

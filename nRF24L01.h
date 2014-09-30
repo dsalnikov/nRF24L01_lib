@@ -1,11 +1,25 @@
 #ifndef __NRF24L01_H
 #define __NRF24L01_H
 
+
+// соединение с discovery
+//
+// CE --> pa3
+// CSn --> pa4
+// miso --> pa6
+// mosi --> pa7
+// sck --> pa5
+// irq --> pa2
+
 // макросы управления CS
 // устанавливает ножку CS в 1 состояние
-#define nRF24L01_CS_SET     GPIOC->BSRRL = GPIO_BSRR_BS_9
+#define nRF24L01_CS_SET     GPIO_ResetBits(GPIOA, GPIO_Pin_4)
 // сбрасывает ножку CS в 0 состояние
-#define nRF24L01_CS_RESET   GPIOC->BSRRH = GPIO_BSRR_BS_9
+#define nRF24L01_CS_RESET   GPIO_SetBits(GPIOA, GPIO_Pin_4)
+
+// макросы управления сигналом ChipEnable
+#define nRF24L01_CE_SET     GPIO_SetBits(GPIOA, GPIO_Pin_3)
+#define nRF24L01_CE_RESET   GPIO_ResetBits(GPIOA, GPIO_Pin_3)
 
 // инициализация
 void nRF24L01_init();
