@@ -109,7 +109,7 @@ u8 nRF24L01_write_reg(u8 reg, u8 data)
 
 u8 nRF24L01_configure_tx()
 {
-    u8 data = 0; // some configurations  (1<<PWR_UP)|(1<<EN_CRC)|(0<<PRIM_RX)
+    u8 data = 0;
     u8 resp;
     resp = nRF24L01_write_reg(nRF24L01_CONFIG_REG, data);
     return resp;
@@ -117,10 +117,47 @@ u8 nRF24L01_configure_tx()
 
 u8 nRF24L01_configure_rx()
 {
-    u8 data = 0; // some configurations (1<<PWR_UP)|(1<<EN_CRC)|(0<<PRIM_RX)
+    nRF24L01_CONFIG_REGISTER confReg;
+    nRF24L01_SETUP_RETR_REGISTER setupRetr;
     u8 resp;
-    resp = nRF24L01_write_reg(nRF24L01_CONFIG_REG, data);
+    
+    // clear regs
+    confReg.all = 0;
+    setupRetr.all = 0;
+    
+    confReg.bit.PWR_UP = 1;
+    confReg.bit.PRIM_RX = 1; // we are receiver
+    confReg.bit.CRCO = 1; // 2B crc
+        
+    resp = nRF24L01_write_reg(nRF24L01_CONFIG_REG, confReg.all);
+    
+    // enable Auto Acknowledgment on all pipes
+    resp = nRF24L01_write_reg(nRF24L01_EN_AA_REG, 0x3F);
+    
+    setupRetr.bit.ARC = 15; // 15 retransmits
+    setupRetr.bit.ARDa = 1; // wait 500uS
+    
+    resp = nRF24L01_write_reg(nRF24L01_SETUP_RETR_REG, setupRetr.all);
+    
+    // enable all rx`s
+    resp = nRF24L01_write_reg(nRF24L01_EN_RXADDR_REG, 0x3F);
+    
+    // setup 5 bytes address width
+    resp = nRF24L01_write_reg(nRF24L01_SETUP_AW_REG, 0x03);
+    
+    //TODO:
+    //config RF chenel
+    //config data rate
     return resp;
+}
+
+u8 nRF24L01_readRx(u8 *resp)
+{
+    u8 res;
+    
+    //read 5 Bites
+    res = nRF24L01_read_reg(nRF24L01_RX_ADDR_P0_REG, resp, 5);
+    return res;
 }
 
 /*u8 nRF24L01_send_byte(u8 data)

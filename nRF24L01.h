@@ -62,6 +62,13 @@ u8 nRF24L01_configure_rx();
 **/
 u8 nRF24L01_send_byte(u8 data);
 
+/**
+* Читаем полученные данные
+* @param resp - pointer to received data
+* @return error code
+**/
+u8 nRF24L01_readRx(u8 *resp);
+
 // регистры nRF24L01
 enum nRF24L01_REG {
     nRF24L01_CONFIG_REG = 0,
@@ -115,4 +122,32 @@ enum nRF24L01_COMMAND {
     nRF24L01_NOP = 0xFF
     
 };
+
+struct nRF24L01_CONFIG_REG_BITS {
+    u8 PRIM_RX : 1;
+    u8 PWR_UP : 1;
+    u8 CRCO : 1;
+    u8 EN_CRC : 1;
+    u8 MASK_MAX_RT : 1;
+    u8 MASK_TX_DS : 1;
+    u8 MASK_RX_DR : 1;
+    u8 res : 1;
+};
+
+typedef  union {
+    struct nRF24L01_CONFIG_REG_BITS bit;
+    u8 all;
+} nRF24L01_CONFIG_REGISTER;
+
+
+struct nRF24L01_SETUP_RETR_REG_BITS {
+    u8 ARC : 4; //0..3
+    u8 ARDa : 4; //4..7
+};
+
+typedef  union {
+    struct nRF24L01_SETUP_RETR_REG_BITS bit;
+    u8 all;
+} nRF24L01_SETUP_RETR_REGISTER;
+
 #endif // __NRF24L01_H
