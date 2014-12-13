@@ -171,5 +171,10 @@ typedef  union {
     u8 all;
 } nRF24L01_STATUS_REGISTER;
 
+/**
+* Read status register
+* @return value of status register
+**/
+nRF24L01_STATUS_REGISTER nRF24L01_readStatus();
 
 #endif // __NRF24L01_H

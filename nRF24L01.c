@@ -216,11 +216,11 @@ u8 nRF24L01_writeTx(u8 *data)
     return res;
 }
 
-/*u8 nRF24L01_send_byte(u8 data)
+nRF24L01_STATUS_REGISTER nRF24L01_readStatus()
 {
     u8 resp;
-    nRF24L01_cmd_send(nRF24L01_W_TX_PAYLOAD);
-    resp = nRF24L01_spi_send(data);
+    nRF24L01_STATUS_REGISTER reg;
+    reg.all = nRF24L01_read_reg(nRF24L01_STATUS_REG,&resp,0);
     
-    return resp;
-}*/
+    return reg; 
+}
