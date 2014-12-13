@@ -69,6 +69,13 @@ u8 nRF24L01_send_byte(u8 data);
 **/
 u8 nRF24L01_readRx(u8 *resp);
 
+/**
+* Write data to TX_PAYLOAD
+* @param data - data to send
+* @return error code
+**/
+u8 nRF24L01_writeTx(u8 *data);
+
 // регистры nRF24L01
 enum nRF24L01_REG {
     nRF24L01_CONFIG_REG = 0,
@@ -149,5 +156,20 @@ typedef  union {
     struct nRF24L01_SETUP_RETR_REG_BITS bit;
     u8 all;
 } nRF24L01_SETUP_RETR_REGISTER;
+
+struct nRF24L01_STATUS_REG_BITS {
+    u8 TX_FULL : 1;
+    u8 RX_P_NO : 3;
+    u8 MAX_RT : 1;
+    u8 TX_DS : 1;
+    u8 RX_DR : 1;
+    u8 res : 1;
+};
+
+typedef  union {
+    struct nRF24L01_STATUS_REG_BITS bit;
+    u8 all;
+} nRF24L01_STATUS_REGISTER;
+
 
 #endif // __NRF24L01_H

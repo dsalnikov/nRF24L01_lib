@@ -109,9 +109,37 @@ u8 nRF24L01_write_reg(u8 reg, u8 data)
 
 u8 nRF24L01_configure_tx()
 {
-    u8 data = 0;
+    nRF24L01_CONFIG_REGISTER confReg;
+    nRF24L01_SETUP_RETR_REGISTER setupRetr;
     u8 resp;
-    resp = nRF24L01_write_reg(nRF24L01_CONFIG_REG, data);
+    
+    // clear regs
+    confReg.all = 0;
+    setupRetr.all = 0;
+    
+    confReg.bit.PWR_UP = 1;
+    confReg.bit.PRIM_RX = 0; // we are tranceiver
+    confReg.bit.CRCO = 1; // 2B crc
+        
+    resp = nRF24L01_write_reg(nRF24L01_CONFIG_REG, confReg.all);
+    
+    // enable Auto Acknowledgment on all pipes
+    resp = nRF24L01_write_reg(nRF24L01_EN_AA_REG, 0x3F);
+    
+    setupRetr.bit.ARC = 15; // 15 retransmits
+    setupRetr.bit.ARDa = 1; // wait 500uS
+    
+    resp = nRF24L01_write_reg(nRF24L01_SETUP_RETR_REG, setupRetr.all);
+    
+    // enable all rx`s
+    resp = nRF24L01_write_reg(nRF24L01_EN_RXADDR_REG, 0x3F);
+    
+    // setup 5 bytes address width
+    resp = nRF24L01_write_reg(nRF24L01_SETUP_AW_REG, 0x03);
+    
+    // 5 Bites in RX payload in data pipe 0
+    resp = nRF24L01_write_reg(nRF24L01_RX_PW_P0_REG, 0x05);
+    
     return resp;
 }
 
@@ -145,6 +173,9 @@ u8 nRF24L01_configure_rx()
     // setup 5 bytes address width
     resp = nRF24L01_write_reg(nRF24L01_SETUP_AW_REG, 0x03);
     
+    // 5 Bites in RX payload in data pipe 0
+    resp = nRF24L01_write_reg(nRF24L01_RX_PW_P0_REG, 0x05);
+    
     //TODO:
     //config RF chenel
     //config data rate
@@ -154,9 +185,34 @@ u8 nRF24L01_configure_rx()
 u8 nRF24L01_readRx(u8 *resp)
 {
     u8 res;
+    nRF24L01_CS_SET;
+    *resp++ = nRF24L01_spi_send(nRF24L01_R_RX_PAYLOAD);
+    *resp++ = nRF24L01_spi_send(nRF24L01_NOP);
+    *resp++ = nRF24L01_spi_send(nRF24L01_NOP);
+    *resp++ = nRF24L01_spi_send(nRF24L01_NOP);
+    *resp++ = nRF24L01_spi_send(nRF24L01_NOP);
+    *resp++ = nRF24L01_spi_send(nRF24L01_NOP);
     
-    //read 5 Bites
-    res = nRF24L01_read_reg(nRF24L01_RX_ADDR_P0_REG, resp, 5);
+    nRF24L01_CS_RESET;
+    
+    return res;
+}
+
+u8 nRF24L01_writeTx(u8 *data)
+{
+    u8 res;
+    
+    nRF24L01_CS_SET;
+    
+    res = nRF24L01_spi_send(nRF24L01_W_TX_PAYLOAD);
+    res = nRF24L01_spi_send(*data++);
+    res = nRF24L01_spi_send(*data++);
+    res = nRF24L01_spi_send(*data++);
+    res = nRF24L01_spi_send(*data++);
+    res = nRF24L01_spi_send(*data++);
+    
+    nRF24L01_CS_RESET;
+    
     return res;
 }
 
