@@ -21,11 +21,11 @@
         
       <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1035</ColumnWidth1><ColumnWidth2>276</ColumnWidth2><ColumnWidth3>69</ColumnWidth3></Build>
       <TerminalIO/>
-    <Debug-Log><ColumnWidth0>21</ColumnWidth0><ColumnWidth1>1244</ColumnWidth1></Debug-Log><Select-Ambiguous-Definitions><ColumnWidth0>448</ColumnWidth0><ColumnWidth1>64</ColumnWidth1><ColumnWidth2>769</ColumnWidth2></Select-Ambiguous-Definitions></Static>
+    <Debug-Log><ColumnWidth0>21</ColumnWidth0><ColumnWidth1>1244</ColumnWidth1></Debug-Log><Select-Ambiguous-Definitions><ColumnWidth0>448</ColumnWidth0><ColumnWidth1>64</ColumnWidth1><ColumnWidth2>769</ColumnWidth2></Select-Ambiguous-Definitions><Find-All-Declarations><ColumnWidth0>448</ColumnWidth0><ColumnWidth1>64</ColumnWidth1><ColumnWidth2>769</ColumnWidth2></Find-All-Declarations></Static>
     <Windows>
       
       
-    <Wnd3>
+    <Wnd0>
         <Tabs>
           <Tab>
             <Identity>TabID-26233-23709</Identity>
@@ -37,7 +37,7 @@
           </Tab>
         </Tabs>
         
-      <SelectedTab>0</SelectedTab></Wnd3><Wnd4>
+      <SelectedTab>0</SelectedTab></Wnd0><Wnd1>
         <Tabs>
           <Tab>
             <Identity>TabID-1893-23960</Identity>
@@ -45,22 +45,22 @@
             <Factory>Build</Factory>
             <Session/>
           </Tab>
-        <Tab><Identity>TabID-3701-11717</Identity><TabName>Debug Log</TabName><Factory>Debug-Log</Factory><Session/></Tab><Tab><Identity>TabID-6683-27445</Identity><TabName>Ambiguous Definitions</TabName><Factory>Select-Ambiguous-Definitions</Factory><Session/></Tab></Tabs>
+        <Tab><Identity>TabID-3701-11717</Identity><TabName>Debug Log</TabName><Factory>Debug-Log</Factory><Session/></Tab><Tab><Identity>TabID-6683-27445</Identity><TabName>Ambiguous Definitions</TabName><Factory>Select-Ambiguous-Definitions</Factory><Session/></Tab><Tab><Identity>TabID-30682-21186</Identity><TabName>Declarations</TabName><Factory>Find-All-Declarations</Factory><Session/></Tab></Tabs>
         
-      <SelectedTab>0</SelectedTab></Wnd4></Windows>
+      <SelectedTab>0</SelectedTab></Wnd1></Windows>
     <Editor>
       
       
       
       
-    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\main.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>9</YPos2><SelStart2>446</SelStart2><SelEnd2>446</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\nRF24L01.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>198</YPos2><SelStart2>5553</SelStart2><SelEnd2>5553</SelEnd2></Tab><ActiveTab>1</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\nRF24L01.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>152</YPos2><SelStart2>4052</SelStart2><SelEnd2>4099</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\Debug\List\c.map</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>0</YPos2><SelStart2>0</SelStart2><SelEnd2>0</SelEnd2></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\nRF24L01.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>157</YPos2><SelStart2>4145</SelStart2><SelEnd2>4145</SelEnd2></Tab><ActiveTab>0</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\nRF24L01.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>251</YPos2><SelStart2>6369</SelStart2><SelEnd2>6420</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\main.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>46</YPos2><SelStart2>1209</SelStart2><SelEnd2>1209</SelEnd2></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
     <Positions>
       
       
       
       
       
-    <Top><Row0><Sizes><Toolbar-00CB5FC8><key>iaridepm.enu1</key></Toolbar-00CB5FC8></Sizes></Row0></Top><Left><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>500</Bottom><Right>386</Right><x>-2</x><y>-2</y><xscreen>181</xscreen><yscreen>183</yscreen><sizeHorzCX>138804</sizeHorzCX><sizeHorzCY>252066</sizeHorzCY><sizeVertCX>297546</sizeVertCX><sizeVertCY>691460</sizeVertCY></Rect></Wnd3></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd4><Rect><Top>-2</Top><Left>-2</Left><Bottom>181</Bottom><Right>1306</Right><x>-2</x><y>-2</y><xscreen>1308</xscreen><yscreen>183</yscreen><sizeHorzCX>1003067</sizeHorzCX><sizeHorzCY>252066</sizeHorzCY><sizeVertCX>138804</sizeVertCX><sizeVertCY>252066</sizeVertCY></Rect></Wnd4></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+    <Top><Row0><Sizes><Toolbar-0272A950><key>iaridepm.enu1</key></Toolbar-0272A950></Sizes></Row0><Row1><Sizes/></Row1></Top><Left><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>467</Bottom><Right>386</Right><x>-2</x><y>-2</y><xscreen>181</xscreen><yscreen>183</yscreen><sizeHorzCX>153130</sizeHorzCX><sizeHorzCY>264069</sizeHorzCY><sizeVertCX>328257</sizeVertCX><sizeVertCY>676768</sizeVertCY></Rect></Wnd0></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>181</Bottom><Right>1184</Right><x>-2</x><y>-2</y><xscreen>1186</xscreen><yscreen>183</yscreen><sizeHorzCX>1003384</sizeHorzCX><sizeHorzCY>264069</sizeHorzCY><sizeVertCX>153130</sizeVertCX><sizeVertCY>264069</sizeVertCY></Rect></Wnd1></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
   </Desktop>
 </Workspace>
 

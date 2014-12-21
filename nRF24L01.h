@@ -1,6 +1,10 @@
 #ifndef __NRF24L01_H
 #define __NRF24L01_H
 
+extern volatile u8 ptx;
+void Delay(__IO uint32_t nTime);
+
+#define PAYLOAD_SIZE (1)
 
 // соединение с discovery
 //
@@ -25,11 +29,8 @@
 void nRF24L01_init();
 void nRF24L01_spi_init();
 
-/**
-* Посылка команды
-* @return ответ на запрос
-**/
-u8 nRF24L01_cmd_send(u8 cmd);
+
+void nRF24L01_write_payload(u8 *data, u8 len);
 
 /**
 * Отправка данных по spi
@@ -58,14 +59,9 @@ u8 nRF24L01_configure_tx();
 u8 nRF24L01_configure_rx();
 
 /**
-* Отправляем байт данных
-**/
-u8 nRF24L01_send_byte(u8 data);
-
-/**
-* Читаем полученные данные
+* Read rx data
 * @param resp - pointer to received data
-* @return error code
+* @return status register
 **/
 u8 nRF24L01_readRx(u8 *resp);
 
@@ -75,6 +71,9 @@ u8 nRF24L01_readRx(u8 *resp);
 * @return error code
 **/
 u8 nRF24L01_writeTx(u8 *data);
+
+
+void nRF24L01_ClearStatus();
 
 // регистры nRF24L01
 enum nRF24L01_REG {
@@ -176,5 +175,10 @@ typedef  union {
 * @return value of status register
 **/
 nRF24L01_STATUS_REGISTER nRF24L01_readStatus();
+
+void nRF24L01_write_regm(u8 reg, u8 *data, u8 len);
+
+void nRF24L01_read_regm(u8 reg, u8 *data, u8 len);
+
 
 #endif // __NRF24L01_H

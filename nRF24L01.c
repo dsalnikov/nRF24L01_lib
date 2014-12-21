@@ -17,7 +17,7 @@ void nRF24L01_init()
     GPIO_Init(GPIOA,&gpio);
     
     nRF24L01_CS_RESET;
-    nRF24L01_CE_SET;
+    nRF24L01_CE_RESET;
 
 }
 
@@ -33,7 +33,7 @@ void nRF24L01_spi_init()
     gpio.GPIO_Mode = GPIO_Mode_AF;
     gpio.GPIO_Speed = GPIO_Speed_50MHz;
     gpio.GPIO_OType = GPIO_OType_PP;
-    gpio.GPIO_PuPd = GPIO_PuPd_DOWN;
+    gpio.GPIO_PuPd = GPIO_PuPd_UP;
     GPIO_Init(GPIOA,&gpio);
 
     GPIO_PinAFConfig(GPIOA,GPIO_PinSource5,GPIO_AF_SPI1);
@@ -56,21 +56,18 @@ void nRF24L01_spi_init()
 
 u8 nRF24L01_spi_send(u8 data)
 {
-    SPI_I2S_SendData(SPI1,data);
-    while(SPI_I2S_GetFlagStatus(SPI1,SPI_I2S_FLAG_TXE) == RESET);  // ждём пока данные уйдут    // жде пока данные придут
-    
-    while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_RXNE) == RESET);  // ждём пока данные появтся
+	/* Fill output buffer with data */
+    SPI1->DR = data;
+    /* Wait for transmission to complete */
+    while (!SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE));
+    /* Wait for received data to complete */
+    while (!SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_RXNE));
+    /* Wait for SPI to be ready */
+    while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_BSY));
+    /* Return data from buffer */
     return SPI1->DR;
 }
 
-
-u8 nRF24L01_cmd_send(u8 cmd)
-{
-    u8 resp; 
-    
-    resp = nRF24L01_spi_send(cmd);
-    return resp;
-}
 
 u8 nRF24L01_read_reg(u8 reg, u8 *resp, u8 len)
 {
@@ -119,27 +116,14 @@ u8 nRF24L01_configure_tx()
     
     confReg.bit.PWR_UP = 1;
     confReg.bit.PRIM_RX = 0; // we are tranceiver
-    confReg.bit.CRCO = 1; // 2B crc
-        
+    confReg.bit.CRCO = 1; // 2B crc    
+    
+    //resp = nRF24L01_write_reg(nRF24L01_RF_CH_REG, 2);
+    Delay(10);
+    resp = nRF24L01_write_reg(nRF24L01_RX_PW_P0_REG, 1);
+    Delay(10);
     resp = nRF24L01_write_reg(nRF24L01_CONFIG_REG, confReg.all);
-    
-    // enable Auto Acknowledgment on all pipes
-    resp = nRF24L01_write_reg(nRF24L01_EN_AA_REG, 0x3F);
-    
-    setupRetr.bit.ARC = 15; // 15 retransmits
-    setupRetr.bit.ARDa = 1; // wait 500uS
-    
-    resp = nRF24L01_write_reg(nRF24L01_SETUP_RETR_REG, setupRetr.all);
-    
-    // enable all rx`s
-    resp = nRF24L01_write_reg(nRF24L01_EN_RXADDR_REG, 0x3F);
-    
-    // setup 5 bytes address width
-    resp = nRF24L01_write_reg(nRF24L01_SETUP_AW_REG, 0x03);
-    
-    // 5 Bites in RX payload in data pipe 0
-    resp = nRF24L01_write_reg(nRF24L01_RX_PW_P0_REG, 0x05);
-    
+    Delay(10);
     return resp;
 }
 
@@ -156,26 +140,17 @@ u8 nRF24L01_configure_rx()
     confReg.bit.PWR_UP = 1;
     confReg.bit.PRIM_RX = 1; // we are receiver
     confReg.bit.CRCO = 1; // 2B crc
-        
+    
+    //resp = nRF24L01_write_reg(nRF24L01_RF_CH_REG, 2);
+    Delay(10);
+    resp = nRF24L01_write_reg(nRF24L01_RX_PW_P0_REG, 1);
+    Delay(10);
     resp = nRF24L01_write_reg(nRF24L01_CONFIG_REG, confReg.all);
+    Delay(10);
     
-    // enable Auto Acknowledgment on all pipes
-    resp = nRF24L01_write_reg(nRF24L01_EN_AA_REG, 0x3F);
-    
-    setupRetr.bit.ARC = 15; // 15 retransmits
-    setupRetr.bit.ARDa = 1; // wait 500uS
-    
-    resp = nRF24L01_write_reg(nRF24L01_SETUP_RETR_REG, setupRetr.all);
-    
-    // enable all rx`s
-    resp = nRF24L01_write_reg(nRF24L01_EN_RXADDR_REG, 0x3F);
-    
-    // setup 5 bytes address width
-    resp = nRF24L01_write_reg(nRF24L01_SETUP_AW_REG, 0x03);
-    
-    // 5 Bites in RX payload in data pipe 0
-    resp = nRF24L01_write_reg(nRF24L01_RX_PW_P0_REG, 0x05);
-    
+    nRF24L01_CE_SET;
+    Delay(135);
+        
     //TODO:
     //config RF chenel
     //config data rate
@@ -188,30 +163,73 @@ u8 nRF24L01_readRx(u8 *resp)
     nRF24L01_CS_SET;
     *resp++ = nRF24L01_spi_send(nRF24L01_R_RX_PAYLOAD);
     *resp++ = nRF24L01_spi_send(nRF24L01_NOP);
-    *resp++ = nRF24L01_spi_send(nRF24L01_NOP);
-    *resp++ = nRF24L01_spi_send(nRF24L01_NOP);
-    *resp++ = nRF24L01_spi_send(nRF24L01_NOP);
-    *resp++ = nRF24L01_spi_send(nRF24L01_NOP);
+    //*resp++ = nRF24L01_spi_send(nRF24L01_NOP);
+    //*resp++ = nRF24L01_spi_send(nRF24L01_NOP);
+    //*resp++ = nRF24L01_spi_send(nRF24L01_NOP);
+    //*resp++ = nRF24L01_spi_send(nRF24L01_NOP);
     
     nRF24L01_CS_RESET;
     
-    return res;
+    return nRF24L01_read_reg(nRF24L01_STATUS_REG,resp,0);
 }
 
 u8 nRF24L01_writeTx(u8 *data)
 {
     u8 res;
+    u8 resp;
+    u32 i = 0;
+    nRF24L01_CONFIG_REGISTER confReg;
+    
+    
+    
+    /*
+
+    resp = nRF24L01_write_reg(nRF24L01_EN_AA_REG,  0x3F);
+
+    resp = nRF24L01_write_reg(nRF24L01_EN_RXADDR_REG,  0x3F);  
+    
+    resp = nRF24L01_write_reg(nRF24L01_SETUP_RETR_REG,  0x4F);
+    
+    resp = nRF24L01_write_reg(nRF24L01_RF_CH_REG,  2);
+    
+    
+    // clear interrupts
+    res = nRF24L01_read_reg(nRF24L01_STATUS_REG,&res,0);
+    nRF24L01_write_reg(nRF24L01_STATUS_REG,res);
     
     nRF24L01_CS_SET;
-    
-    res = nRF24L01_spi_send(nRF24L01_W_TX_PAYLOAD);
-    res = nRF24L01_spi_send(*data++);
-    res = nRF24L01_spi_send(*data++);
-    res = nRF24L01_spi_send(*data++);
-    res = nRF24L01_spi_send(*data++);
-    res = nRF24L01_spi_send(*data++);
-    
+    res = nRF24L01_spi_send(nRF24L01_FLUSH_TX);
     nRF24L01_CS_RESET;
+    */
+    
+    ptx = 1;
+    
+    nRF24L01_CS_SET;
+    res = nRF24L01_spi_send(nRF24L01_W_TX_PAYLOAD);
+    res = nRF24L01_spi_send(0x55);
+    nRF24L01_CS_RESET;
+    
+    
+    //nRF24L01_write_payload(data,PAYLOAD_SIZE);
+    
+    for(;i<0xFFFFF;i++);
+    
+    nRF24L01_CE_RESET;
+    
+        // clear regs
+    confReg.all = 0;
+    
+    confReg.bit.PWR_UP = 1;
+    confReg.bit.PRIM_RX = 0; // we are tranceiver
+    confReg.bit.CRCO = 1; // 2B crc
+    confReg.bit.EN_CRC = 1;
+
+    nRF24L01_write_reg(nRF24L01_CONFIG_REG, confReg.all);
+    
+    nRF24L01_CE_SET;
+    for(;i<0xFFFFF;i++);
+    //nRF24L01_CE_RESET;
+    //for(;i<0xFFFFF;i++);
     
     return res;
 }
@@ -223,4 +241,52 @@ nRF24L01_STATUS_REGISTER nRF24L01_readStatus()
     reg.all = nRF24L01_read_reg(nRF24L01_STATUS_REG,&resp,0);
     
     return reg; 
+}
+
+void nRF24L01_ClearStatus()
+{
+    u8 resp;
+    u32 i = 0;
+    u8 reg = nRF24L01_read_reg(nRF24L01_STATUS_REG,&resp,0);
+    for(;i<0xFFFF;i++);
+    nRF24L01_write_reg(nRF24L01_STATUS_REG, reg);
+}
+
+void nRF24L01_write_regm(u8 reg, u8 *data, u8 len)
+{
+    reg &= 0x1F; // 5bit reg num
+    
+    nRF24L01_CS_SET;
+    
+    nRF24L01_spi_send(nRF24L01_W_REGISTER | reg);
+    while(len--)
+    {
+        nRF24L01_spi_send(*data++);
+    }
+    nRF24L01_CS_RESET; 
+}
+
+void nRF24L01_read_regm(u8 reg, u8 *data, u8 len)
+{
+    reg &= 0x1F; // 5bit reg num
+    
+    nRF24L01_CS_SET;
+    
+    nRF24L01_spi_send(nRF24L01_R_REGISTER | reg);
+    while(len--)
+    {
+        *data++ = nRF24L01_spi_send(nRF24L01_NOP);
+    }
+    nRF24L01_CS_RESET; 
+}
+
+void nRF24L01_write_payload(u8 *data, u8 len)
+{
+    nRF24L01_CS_SET;
+    nRF24L01_spi_send(nRF24L01_W_TX_PAYLOAD);
+    while(len--)
+    {
+        nRF24L01_spi_send(*data++);
+    }
+    nRF24L01_CS_RESET;
 }
