@@ -4,7 +4,37 @@
 extern volatile u8 ptx;
 void Delay(__IO uint32_t nTime);
 
-#define PAYLOAD_SIZE (1)
+//RF setup register
+#define NRF24L01_PLL_LOCK		4
+#define NRF24L01_RF_DR_LOW		5
+#define NRF24L01_RF_DR_HIGH		3
+#define NRF24L01_RF_DR			3
+#define NRF24L01_RF_PWR			1 //2 bits   
+
+//Configuration register
+#define NRF24L01_MASK_RX_DR		6
+#define NRF24L01_MASK_TX_DS		5
+#define NRF24L01_MASK_MAX_RT	4
+#define NRF24L01_EN_CRC			3
+#define NRF24L01_CRCO			2
+#define NRF24L01_PWR_UP			1
+#define NRF24L01_PRIM_RX		0
+
+#define NRF24L01_CONFIG			((1 << NRF24L01_EN_CRC) | (0 << NRF24L01_CRCO))
+
+
+typedef enum {
+	nRF24L01_DataRate_2M,		// 2Mbps
+	nRF24L01_DataRate_1M,		// 1Mbps
+	nRF24L01_DataRate_250k		// 250kbps
+} nRF24L01_DataRate_type;
+
+typedef enum {
+	nRF24L01_OutputPower_M18dBm,	// -18dBm
+	nRF24L01_OutputPower_M12dBm,	// -12dBm
+	nRF24L01_OutputPower_M6dBm,	// -6dBm
+	nRF24L01_OutputPower_0dBm	// 0dBm
+} nRF24L01_OutputPower_type;
 
 // соединение с discovery
 //
@@ -17,18 +47,22 @@ void Delay(__IO uint32_t nTime);
 
 // макросы управления CS
 // устанавливает ножку CS в 1 состояние
-#define nRF24L01_CS_SET     GPIO_ResetBits(GPIOA, GPIO_Pin_4)
+#define nRF24L01_CS_LOW     GPIOD->BSRRH = GPIO_Pin_7
 // сбрасывает ножку CS в 0 состояние
-#define nRF24L01_CS_RESET   GPIO_SetBits(GPIOA, GPIO_Pin_4)
+#define nRF24L01_CS_HIGH    GPIOD->BSRRL = GPIO_Pin_7
 
 // макросы управления сигналом ChipEnable
-#define nRF24L01_CE_SET     GPIO_SetBits(GPIOA, GPIO_Pin_3)
-#define nRF24L01_CE_RESET   GPIO_ResetBits(GPIOA, GPIO_Pin_3)
+#define nRF24L01_CE_LOW     GPIOD->BSRRH = GPIO_Pin_8
+#define nRF24L01_CE_HIGH    GPIOD->BSRRL = GPIO_Pin_8
 
 // инициализация
 void nRF24L01_init();
 void nRF24L01_spi_init();
 
+void nRF24L01_set_rf(nRF24L01_DataRate_type dr, nRF24L01_OutputPower_type pow);
+void nRF24L01_set_my_addr(u8 *addr);
+void nRF24L01_set_tx_addr(u8 *addr);
+void nRF24L01_WriteBit(uint8_t reg, uint8_t bit, BitAction value);
 
 void nRF24L01_write_payload(u8 *data, u8 len);
 
@@ -49,21 +83,17 @@ u8 nRF24L01_read_reg(u8 reg, u8 *resp, u8 len);
 u8 nRF24L01_write_reg(u8 reg, u8 data);
 
 /**
-* Настраиваем на передачу
-**/
-u8 nRF24L01_configure_tx();
-
-/**
 * Настраиваем на прием
 **/
-u8 nRF24L01_configure_rx();
+void nRF24L01_configure_rx();
 
 /**
 * Read rx data
 * @param resp - pointer to received data
+* @param len - count of bytes
 * @return status register
 **/
-u8 nRF24L01_readRx(u8 *resp);
+u8 nRF24L01_readRx(u8 *resp,u8 len);
 
 /**
 * Write data to TX_PAYLOAD
@@ -77,37 +107,32 @@ void nRF24L01_ClearStatus();
 
 // регистры nRF24L01
 enum nRF24L01_REG {
-    nRF24L01_CONFIG_REG = 0,
-    nRF24L01_EN_AA_REG,
-    nRF24L01_EN_RXADDR_REG,
-    nRF24L01_SETUP_AW_REG,
-    nRF24L01_SETUP_RETR_REG,
-    nRF24L01_RF_CH_REG,
-    nRF24L01_RF_SETUP_REG,
-    nRF24L01_STATUS_REG,
-    nRF24L01_OBSERVE_TX_REG,
-    nRF24L01_RPD_REG,
-    nRF24L01_RX_ADDR_P0_REG,
-    nRF24L01_RX_ADDR_P1_REG,
-    nRF24L01_RX_ADDR_P2_REG,
-    nRF24L01_RX_ADDR_P3_REG,
-    nRF24L01_RX_ADDR_P4_REG,
-    nRF24L01_RX_ADDR_P5_REG,
-    nRF24L01_TX_ADDR_REG,
-    nRF24L01_RX_PW_P0_REG,
-    nRF24L01_RX_PW_P1_REG,
-    nRF24L01_RX_PW_P2_REG,
-    nRF24L01_RX_PW_P3_REG,
-    nRF24L01_RX_PW_P4_REG,
-    nRF24L01_RX_PW_P5_REG,
-    nRF24L01_FIFO_STATUS_REG,
-    
-    
-    nRF24L01_ACK_PLD_REG, // n/a addr
-    nRF24L01_TX_PLD_REG,  // n/a addr
-    nRF24L01_RX_PLD_REG,  // n/a addr
-    
-    nRF24L01_DYNPD_REG = 0x1c, //1c
+    nRF24L01_CONFIG_REG = 0x00,
+    nRF24L01_EN_AA_REG = 0x01,
+    nRF24L01_EN_RXADDR_REG = 0x02,
+    nRF24L01_SETUP_AW_REG = 0x03,
+    nRF24L01_SETUP_RETR_REG = 0x04,
+    nRF24L01_RF_CH_REG = 0x05,
+    nRF24L01_RF_SETUP_REG = 0x06,
+    nRF24L01_STATUS_REG = 0x07,
+    nRF24L01_OBSERVE_TX_REG = 0x08,
+    nRF24L01_RPD_REG = 0x09,
+    nRF24L01_RX_ADDR_P0_REG = 0x0A,
+    nRF24L01_RX_ADDR_P1_REG = 0x0B,
+    nRF24L01_RX_ADDR_P2_REG = 0x0C,
+    nRF24L01_RX_ADDR_P3_REG = 0x0D,
+    nRF24L01_RX_ADDR_P4_REG = 0x0E,
+    nRF24L01_RX_ADDR_P5_REG = 0x0F,
+    nRF24L01_TX_ADDR_REG = 0x10,
+    nRF24L01_RX_PW_P0_REG = 0x11,
+    nRF24L01_RX_PW_P1_REG = 0x12,
+    nRF24L01_RX_PW_P2_REG = 0x13,
+    nRF24L01_RX_PW_P3_REG = 0x14,
+    nRF24L01_RX_PW_P4_REG = 0x15,
+    nRF24L01_RX_PW_P5_REG = 0x16,
+    nRF24L01_FIFO_STATUS_REG = 0x17,
+        
+    nRF24L01_DYNPD_REG = 0x1c,
     nRF24L01_FEATURE_REG = 0x1d,
     
     nRF24L01_REG_MAX // максимальный номер регистра
@@ -176,9 +201,30 @@ typedef  union {
 **/
 nRF24L01_STATUS_REGISTER nRF24L01_readStatus();
 
+/**
+* Write multibyte register
+* @param reg - register
+* @param data - pointer to data
+* @param len - count of bytes
+**/
 void nRF24L01_write_regm(u8 reg, u8 *data, u8 len);
 
+/**
+* Read multibyte register
+* @param reg - register
+* @param data - pointer to store data
+* @param len - count of bytes
+**/
 void nRF24L01_read_regm(u8 reg, u8 *data, u8 len);
 
+/**
+* Clear tx fifo
+**/
+void nRF24L01_flush_tx();
+
+/**
+* Clear rx fifo
+**/
+void nRF24L01_flush_rx();
 
 #endif // __NRF24L01_H
