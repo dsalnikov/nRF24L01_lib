@@ -4,6 +4,7 @@
 #include "nRF24L01.h"
 
 #include <stdio.h>
+#include <string.h>
 
 // счетчик 
 static __IO uint32_t TimingDelay;
@@ -12,10 +13,7 @@ static __IO uint32_t TimingDelay;
 void Delay(__IO uint32_t nTime);
 void TimingDelay_Decrement(void);
 
-void BInit();
-
 nRF24L01_STATUS_REGISTER status_reg;
-nRF24L01_CONFIG_REGISTER config_reg;
 
 /* My address */
 uint8_t MyAddress[] = {
@@ -35,10 +33,7 @@ uint8_t TxAddress[] = {
 };
 
 void main(void){
-    SystemInit();
-    BInit();
-    
-    
+  
     // 0.001 с = 1/1000 с = 1мс
     if (SysTick_Config(SystemCoreClock / 1000)){ 
         /* если вернулся не ноль - ошибка */
@@ -50,25 +45,20 @@ void main(void){
     STM_EVAL_LEDInit(LED5);
     STM_EVAL_LEDInit(LED6);
     
-    Delay(100); 
-
-    // test commit
-    
-
-    u8 str[] = "Hello blablacode.ru by nRF24\n";
-    //u8 str[] = {0x55,0xAA};
-    
     nRF24L01_init();
 
     nRF24L01_set_rf(nRF24L01_DataRate_2M, nRF24L01_OutputPower_M18dBm);
-   
     
+    // устанавливаем адреса приемника и передатчика
     nRF24L01_set_my_addr(MyAddress);
     nRF24L01_set_tx_addr(TxAddress);
     
-    u8 dataOut[32];
-    sprintf((char *)dataOut, "abcdefghijklmnoszxABCDEFCBDA");
-     
+    u8 str[32] = "Hello blablacode.ru by nRF24\n";
+    u8 dataIn[32];
+    u16 req = 0;
+    
+    u16 badTransactions = 0;
+    u16 successfulTransactions = 0;  
     
     while (1)  {
         status_reg = nRF24L01_readStatus();
@@ -79,15 +69,42 @@ void main(void){
         } while (status_reg.bit.MAX_RT == 0 && status_reg.bit.TX_DS == 0);
         
         nRF24L01_ClearStatus();
+        
+        nRF24L01_configure_rx();
+        do {
+            status_reg = nRF24L01_readStatus();
+            req++;
+            if (req > 1000)
+            {
+                req = 0;
+                break;
+            }
+        } while (status_reg.bit.RX_DR == 0);
+        
+        if (status_reg.bit.RX_DR)
+        {
+            // чистим буфер
+            memset(dataIn,0,32);
+            // читаем
+            nRF24L01_readRx(dataIn,32);
+            
+            // сравниваем
+            int ret = memcmp(dataIn,str,32);
+            if (ret == 0)
+                successfulTransactions++;
+            else
+                badTransactions++;
+        }        
+
         status_reg = nRF24L01_readStatus();
-        Delay(100);
+        
     }
 }
 
 /* функция задержки */
 void Delay(__IO uint32_t nTime){ 
   TimingDelay = nTime;
-  while(TimingDelay != 0); // безконченый цикл пока значение счетчика не нулевое
+  while(TimingDelay != 0);
 }
  
 /* декремент значения счетчика задержки, если он не равен нулю */
@@ -95,14 +112,4 @@ void TimingDelay_Decrement(void){
   if (TimingDelay != 0x00){ 
     TimingDelay--;
   }
-}
-
-void BInit() {
-      RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
-      GPIO_InitTypeDef gpio_b;   /// структура для инициализации кнопки
-      GPIO_StructInit(&gpio_b);  // заполняем структуру стандартными параметрами
-      gpio_b.GPIO_Mode = GPIO_Mode_IN;   // это кнопка - порт работает как вход
-      gpio_b.GPIO_Pin = GPIO_Pin_1;
- 
-      GPIO_Init(GPIOB, &gpio_b);   // инициализируем порт B
 }
