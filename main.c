@@ -97,7 +97,6 @@ void main(void){
         }        
 
         status_reg = nRF24L01_readStatus();
-        
     }
 }
 

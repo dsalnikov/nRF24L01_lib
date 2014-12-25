@@ -1,8 +1,8 @@
 #include <stm32f4xx.h>
 #include "nRF24L01.h"
 
-void nRF24L01_init()
-{  
+void nRF24L01_gpio_init()
+{
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD,ENABLE);
     // CE & CSn
     GPIO_InitTypeDef gpio;
@@ -14,13 +14,64 @@ void nRF24L01_init()
     gpio.GPIO_OType = GPIO_OType_PP;
     gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
     GPIO_Init(GPIOD,&gpio);
+}
+
+void nRF24L01_spi_init()
+{
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+
+    GPIO_InitTypeDef gpio;
+    GPIO_StructInit(&gpio);
+
+    gpio.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12;
+    gpio.GPIO_Mode = GPIO_Mode_AF;
+    gpio.GPIO_Speed = GPIO_Speed_100MHz;
+    gpio.GPIO_OType = GPIO_OType_PP;
+    gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_Init(GPIOC,&gpio);
+
+    GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_SPI3);
+    GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_SPI3);
+    GPIO_PinAFConfig(GPIOC, GPIO_PinSource12, GPIO_AF_SPI3);
+
+  	RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI3, ENABLE);
+
+    SPI_InitTypeDef spi1;
+    SPI_StructInit(&spi1);
+
+    spi1.SPI_Mode = SPI_Mode_Master;
+    spi1.SPI_DataSize = SPI_DataSize_8b;
+    spi1.SPI_NSS = SPI_NSS_Soft;
+    spi1.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32;
+    SPI_Init(SPI3,&spi1);
+    
+    SPI_Cmd(SPI3,ENABLE);
+}
+
+u8 nRF24L01_spi_send(u8 data)
+{
+	/* Fill output buffer with data */
+    SPI3->DR = data;
+    /* Wait for transmission to complete */
+    while (!SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_TXE));
+    /* Wait for received data to complete */
+    while (!SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_RXNE));
+    /* Wait for SPI to be ready */
+    while (SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_BSY));
+    /* Return data from buffer */
+    return SPI3->DR;
+}
+
+void nRF24L01_init()
+{  
+    nRF24L01_gpio_init();
     
     nRF24L01_CS_HIGH;
     nRF24L01_CE_LOW;
     
     nRF24L01_spi_init();
     
-    //select chenel
+    //select channel
     nRF24L01_write_reg(nRF24L01_RF_CH_REG, 15);
     
     //select data size
@@ -56,69 +107,14 @@ void nRF24L01_init()
     nRF24L01_configure_rx();
 }
 
-void nRF24L01_spi_init()
+u8 nRF24L01_read_reg(u8 reg)
 {
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
-
-    GPIO_InitTypeDef gpio;
-    GPIO_StructInit(&gpio);
-
-    gpio.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12;
-    gpio.GPIO_Mode = GPIO_Mode_AF;
-    gpio.GPIO_Speed = GPIO_Speed_100MHz;
-    gpio.GPIO_OType = GPIO_OType_PP;
-    gpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOC,&gpio);
-
-    GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_SPI3);
-    GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_SPI3);
-    GPIO_PinAFConfig(GPIOC, GPIO_PinSource12, GPIO_AF_SPI3);
-
-  	RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI3, ENABLE);
-
-    SPI_InitTypeDef spi1;
-    SPI_StructInit(&spi1);
-
-    spi1.SPI_Mode = SPI_Mode_Master;
-    spi1.SPI_DataSize = SPI_DataSize_8b;
-    spi1.SPI_NSS = SPI_NSS_Soft;
-    spi1.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32;
-    SPI_Init(SPI3,&spi1);
-    
-    SPI_Cmd(SPI3,ENABLE);
-}
-
-
-u8 nRF24L01_spi_send(u8 data)
-{
-	/* Fill output buffer with data */
-    SPI3->DR = data;
-    /* Wait for transmission to complete */
-    while (!SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_TXE));
-    /* Wait for received data to complete */
-    while (!SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_RXNE));
-    /* Wait for SPI to be ready */
-    while (SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_BSY));
-    /* Return data from buffer */
-    return SPI3->DR;
-}
-
-
-u8 nRF24L01_read_reg(u8 reg, u8 *resp, u8 len)
-{
-    u8 i;
     u8 res = 0;
-    
     reg &= 0x1F; // 5bit reg num
     
     nRF24L01_CS_LOW;
-    
-    res = nRF24L01_spi_send(nRF24L01_R_REGISTER | reg);
-    for(i=0; i < len; i++)
-    {
-        resp[i] = nRF24L01_spi_send(nRF24L01_NOP);
-    }
-    
+    nRF24L01_spi_send(nRF24L01_R_REGISTER | reg);
+    res = nRF24L01_spi_send(nRF24L01_NOP);
     nRF24L01_CS_HIGH;
     
     return res;
@@ -169,14 +165,13 @@ u8 nRF24L01_readRx(u8 *resp,u8 len)
     }
     nRF24L01_CS_HIGH;
 
-    return nRF24L01_read_reg(nRF24L01_STATUS_REG,resp,0);
+    return nRF24L01_read_reg(nRF24L01_STATUS_REG);
 }
 
 nRF24L01_STATUS_REGISTER nRF24L01_readStatus()
 {
-    u8 resp;
     nRF24L01_STATUS_REGISTER reg;
-    reg.all = nRF24L01_read_reg(nRF24L01_STATUS_REG,&resp,0);
+    reg.all = nRF24L01_read_reg(nRF24L01_STATUS_REG);
     
     return reg; 
 }
@@ -190,8 +185,8 @@ void nRF24L01_ClearStatus()
 
 void nRF24L01_WriteBit(uint8_t reg, uint8_t bit, BitAction value) 
 {
-	u8 tmp,resp;
-	tmp = nRF24L01_read_reg(reg,&resp,0);
+	u8 tmp;
+	tmp = nRF24L01_read_reg(reg);
 	if (value != Bit_RESET) {
 		tmp |= 1 << bit;
 	} else {
@@ -288,4 +283,9 @@ void nRF24L01_set_tx_addr(u8 *addr)
 {
     nRF24L01_write_regm(nRF24L01_RX_ADDR_P0_REG,addr,5);
     nRF24L01_write_regm(nRF24L01_TX_ADDR_REG,addr,5);
+}
+
+void nRF24L01_select_channel(u8 ch)
+{
+    nRF24L01_write_reg(nRF24L01_RF_CH_REG, ch);
 }

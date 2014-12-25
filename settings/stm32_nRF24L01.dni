@@ -54,9 +54,6 @@ Fmt0=u8[5]	4	0
 [watch_formats]
 Fmt0={W}1:reg	1	0
 Fmt1={W}1:resp	0	2
-[Trace2]
-Enabled=0
-ShowSource=0
 [SWOTraceWindow]
 PcSampling=0
 InterruptLogs=0
@@ -79,13 +76,6 @@ GraphEnabled=0
 ShowTimeLog=1
 ShowTimeSum=1
 SumSortOrder=0
-[Disassemble mode]
-mode=0
-[Breakpoints2]
-Bp0=_ 0 "EMUL_DATA" "successfulTransactions" 0 0 0 0 4294967295
-Bp1=_ 0 "EMUL_DATA" "packetsLost" 0 0 0 0 4294967295
-Bp2=_ 0 "EMUL_DATA" "successfulTransactions" 0 0 0 0 4294967295
-Count=3
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -93,9 +83,6 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
-[Aliases]
-Count=0
-SuppressDialog=0
 [CallStackLog]
 Enabled=0
 [DriverProfiling]
@@ -104,3 +91,13 @@ Mode=3
 Graph=0
 Symbiont=0
 Exclusions=
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Bp0=_ 0 "EMUL_DATA" "successfulTransactions" 0 0 0 0 4294967295
+Bp1=_ 0 "EMUL_DATA" "packetsLost" 0 0 0 0 4294967295
+Bp2=_ 0 "EMUL_DATA" "successfulTransactions" 0 0 0 0 4294967295
+Count=3
+[Aliases]
+Count=0
+SuppressDialog=0

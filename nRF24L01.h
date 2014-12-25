@@ -1,9 +1,6 @@
 #ifndef __NRF24L01_H
 #define __NRF24L01_H
 
-extern volatile u8 ptx;
-void Delay(__IO uint32_t nTime);
-
 //RF setup register
 #define NRF24L01_PLL_LOCK		4
 #define NRF24L01_RF_DR_LOW		5
@@ -32,58 +29,64 @@ typedef enum {
 typedef enum {
 	nRF24L01_OutputPower_M18dBm,	// -18dBm
 	nRF24L01_OutputPower_M12dBm,	// -12dBm
-	nRF24L01_OutputPower_M6dBm,	// -6dBm
-	nRF24L01_OutputPower_0dBm	// 0dBm
+	nRF24L01_OutputPower_M6dBm,	    // -6dBm
+	nRF24L01_OutputPower_0dBm	    // 0dBm
 } nRF24L01_OutputPower_type;
 
-// соединение с discovery
-//
-// CE --> pa3
-// CSn --> pa4
-// miso --> pa6
-// mosi --> pa7
-// sck --> pa5
-// irq --> pa2
-
-// макросы управления CS
-// устанавливает ножку CS в 1 состояние
 #define nRF24L01_CS_LOW     GPIOD->BSRRH = GPIO_Pin_7
-// сбрасывает ножку CS в 0 состояние
 #define nRF24L01_CS_HIGH    GPIOD->BSRRL = GPIO_Pin_7
 
-// макросы управления сигналом ChipEnable
 #define nRF24L01_CE_LOW     GPIOD->BSRRH = GPIO_Pin_8
 #define nRF24L01_CE_HIGH    GPIOD->BSRRL = GPIO_Pin_8
 
-// инициализация
+// initialisation
 void nRF24L01_init();
 void nRF24L01_spi_init();
+void nRF24L01_gpio_init();
 
+
+/**
+* Set output power and datarate
+**/
 void nRF24L01_set_rf(nRF24L01_DataRate_type dr, nRF24L01_OutputPower_type pow);
+
+/**
+* Set this dev address
+**/
 void nRF24L01_set_my_addr(u8 *addr);
+
+/**
+* Set address of the devise with witch comunicate
+**/
 void nRF24L01_set_tx_addr(u8 *addr);
+
+/**
+* Write bit to nRF24 register
+**/
 void nRF24L01_WriteBit(uint8_t reg, uint8_t bit, BitAction value);
 
+/**
+* Write data for transmission
+**/
 void nRF24L01_write_payload(u8 *data, u8 len);
 
 /**
-* Отправка данных по spi
-* @return полученные данные
+* Send data by spi
 **/
 u8 nRF24L01_spi_send(u8 data);
 
 /**
-* Читаем регистр
+* Read single register
 **/
-u8 nRF24L01_read_reg(u8 reg, u8 *resp, u8 len);
+u8 nRF24L01_read_reg(u8 reg);
 
 /**
-* Пишем регистр
+* Write single register
 **/
 u8 nRF24L01_write_reg(u8 reg, u8 data);
 
 /**
-* Настраиваем на прием
+* Configure for receivement
 **/
 void nRF24L01_configure_rx();
 
@@ -226,5 +229,10 @@ void nRF24L01_flush_tx();
 * Clear rx fifo
 **/
 void nRF24L01_flush_rx();
+
+/**
+* Set RF_H register value
+**/
+void nRF24L01_select_channel(u8 ch);
 
 #endif // __NRF24L01_H
